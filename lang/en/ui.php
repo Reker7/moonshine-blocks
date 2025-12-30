@@ -1,0 +1,125 @@
+<?php
+
+return [
+    // Common
+    'title' => 'Title',
+    'slug' => 'Slug',
+    'is_active' => 'Active',
+    'sorting' => 'Sorting',
+    'created_at' => 'Created at',
+    'category' => 'Category',
+
+    // Actions
+    'save' => 'Save',
+    'create' => 'Create',
+    'back' => 'Back',
+    'close' => 'Close',
+    'done' => 'Done',
+    'delete' => 'Delete',
+    'delete_confirm' => 'Are you sure you want to delete?',
+    'editing' => 'Editing',
+    'creating' => 'Creating',
+
+    // Pages
+    'block_item' => 'Block item',
+    'block_items' => 'Block items',
+    'block_not_found' => 'Block not found',
+    'categories' => 'Categories',
+    'items_list' => 'Items',
+
+    // Fields
+    'fields' => [
+        'name' => 'Name',
+        'slug' => 'Slug',
+        'is_active' => 'Active',
+        'sorting' => 'Sorting',
+    ],
+
+    // Export
+    'export' => [
+        'button' => 'Export',
+        'title' => 'Export blocks',
+        'include_groups' => 'Export with groups',
+        'include_groups_hint' => 'If enabled, block groups will also be exported',
+        'hint' => 'Select blocks in the table and click "Generate". Copy the generated code for import.',
+        'generate' => 'Generate',
+        'result' => 'Result',
+        'select_blocks' => 'Select blocks to export',
+        'success' => 'Export completed successfully',
+        'error' => 'Export error',
+        'copied' => 'Copied to clipboard',
+    ],
+
+    // Import
+    'import' => [
+        'button' => 'Import',
+        'title' => 'Import blocks',
+        'data_label' => 'Import data',
+        'placeholder' => 'Paste the exported string here...',
+        'hint' => 'Paste the export code and click "Import". Existing blocks with the same slugs will be updated.',
+        'enter_data' => 'Enter import data',
+        'error' => 'Import error',
+        'success' => 'Imported: :groups groups, :blocks blocks',
+        'partial_success' => 'Imported: :groups groups, :blocks blocks. Errors: :errors',
+    ],
+
+    // FieldsBuilder
+    'name' => 'Name',
+    'key' => 'Key',
+    'type' => 'Type',
+    'required' => 'Required',
+    'required_short' => 'Req',
+    'field_name' => 'Field name',
+    'field_key' => 'Field key',
+    'field_type' => 'Field type',
+    'add_field' => 'Add field',
+    'settings' => 'Settings',
+    'no_fields' => 'No fields added yet',
+    'field_settings' => 'Field settings',
+    'placeholder' => 'Placeholder',
+    'default_value' => 'Default value',
+    'hint' => 'Hint',
+    'options' => 'Options',
+    'value' => 'Value',
+    'label' => 'Label',
+    'option_value' => 'Value',
+    'option_label' => 'Label',
+    'no_options' => 'No options',
+    'add_option' => 'Add option',
+    'min' => 'Min',
+    'max' => 'Max',
+    'step' => 'Step',
+    'nested_fields' => 'Nested fields',
+    'no_nested_fields' => 'No nested fields',
+    'add_nested_field' => 'Add nested field',
+    'actions' => 'Actions',
+
+    // Preview
+    'field' => 'field',
+    'fields' => 'fields',
+
+    'field_types' => [
+        'text' => 'Text',
+        'textarea' => 'Textarea',
+        'number' => 'Number',
+        'email' => 'Email',
+        'phone' => 'Phone',
+        'password' => 'Password',
+        'date' => 'Date',
+        'datetime' => 'Date and time',
+        'checkbox' => 'Checkbox',
+        'switcher' => 'Switcher',
+        'select' => 'Select',
+        'radio' => 'Radio buttons',
+        'file' => 'File',
+        'image' => 'Image',
+        'color' => 'Color',
+        'url' => 'URL',
+        'range' => 'Range',
+        'json' => 'JSON',
+        'code' => 'Code',
+        'markdown' => 'Markdown',
+        'tinymce' => 'TinyMCE Editor',
+        'nested' => 'Nested fields',
+    ],
+];

@@ -31,7 +31,6 @@ final class MoonShineBlocksServiceProvider extends ServiceProvider
 
     public function boot(CoreContract $core, MenuManagerContract $menu): void
     {
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'moonshine-blocks');
         $this->loadRoutesFrom(__DIR__ . '/../../routes/moonshine-blocks.php');
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'moonshine-blocks');
 

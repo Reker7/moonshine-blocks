@@ -213,7 +213,7 @@ final class BlocksMenu
             ? route('moonshine.blocks.edit', ['block' => $block->slug, 'item' => $itemId])
             : route('moonshine.blocks.create', ['block' => $block->slug]);
 
-        return MenuItem::make($url, $block->name, $this->singleBlockIcon);
+        return MenuItem::make($block->name, $url, $this->singleBlockIcon);
     }
 
     /**
@@ -225,13 +225,13 @@ final class BlocksMenu
     {
         return MenuGroup::make($block->name, [
             MenuItem::make(
-                route('moonshine.blocks.categories.index', ['block' => $block->slug]),
                 __('moonshine-blocks::ui.categories') ?: 'Categories',
+                route('moonshine.blocks.categories.index', ['block' => $block->slug]),
                 $this->categoriesIcon
             ),
             MenuItem::make(
-                route('moonshine.blocks.index', ['block' => $block->slug]),
                 __('moonshine-blocks::ui.items_list') ?: 'Elements',
+                route('moonshine.blocks.index', ['block' => $block->slug]),
                 $this->itemsIcon
             ),
         ], $this->multipleBlockIcon);
@@ -313,18 +313,18 @@ final class BlocksMenu
     {
         return [
             MenuItem::make(
-                app(BlockResource::class)->getUrl(),
                 'Блоки',
+                app(BlockResource::class)->getUrl(),
                 'rectangle-stack'
             ),
             MenuItem::make(
-                app(BlockGroupResource::class)->getUrl(),
                 'Группы блоков',
+                app(BlockGroupResource::class)->getUrl(),
                 'folder'
             ),
             MenuItem::make(
-                app(FieldPresetResource::class)->getUrl(),
                 'Пресеты полей',
+                app(FieldPresetResource::class)->getUrl(),
                 'clipboard-document-list'
             ),
         ];

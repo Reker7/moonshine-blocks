@@ -10,7 +10,6 @@ use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Laravel\Fields\Slug;
 use MoonShine\Laravel\TypeCasts\ModelCaster;
-use MoonShine\Support\Enums\PageType;
 use MoonShine\UI\Components\ActionButton;
 use MoonShine\UI\Components\ActionGroup;
 use MoonShine\UI\Components\FormBuilder;
@@ -32,8 +31,6 @@ use Reker7\MoonShineBlocksCore\Models\BlockItem;
 
 final class FormBlockItemPage extends AbstractBlockFormPage
 {
-    protected ?PageType $pageType = PageType::FORM;
-
     protected ?BlockItem $item = null;
 
     public function getTitle(): string
@@ -276,19 +273,20 @@ final class FormBlockItemPage extends AbstractBlockFormPage
     }
 
     /**
-     * Expose the content field so that third-party packages that discover page
-     * fields via getFields() (e.g. moonshine/layouts-field LayoutsController)
-     * can locate it by column name without requiring a block context.
+     * Expose the content field in the components tree so that third-party
+     * packages that discover page fields via getComponents() (e.g.
+     * moonshine/layouts-field LayoutsController) can locate it by column
+     * name without requiring a block context.
      *
-     * @return list<FieldContract>
+     * @return iterable<\MoonShine\Contracts\UI\ComponentContract>
      */
-    protected function fields(): iterable
+    protected function components(): iterable
     {
-        if ($this->isContentEnabled()) {
+        if (! $this->getBlock() && $this->isContentEnabled()) {
             return [$this->resolveContentField()];
         }
 
-        return [];
+        return parent::components();
     }
 
     protected function isContentEnabled(): bool

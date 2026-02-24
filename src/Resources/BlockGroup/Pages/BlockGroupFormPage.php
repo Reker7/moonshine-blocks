@@ -7,22 +7,18 @@ namespace Reker7\MoonShineBlocks\Resources\BlockGroup\Pages;
 use MoonShine\Contracts\Core\TypeCasts\DataWrapperContract;
 use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\Contracts\UI\FieldContract;
-use MoonShine\Laravel\Fields\Relationships\BelongsTo;
 use MoonShine\Laravel\Fields\Slug;
 use MoonShine\Laravel\Pages\Crud\FormPage;
 use MoonShine\UI\Fields\ID;
 use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
-use Reker7\MoonShineBlocks\Resources\BlockGroup\BlockGroupResource;
-use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder;
 
 /**
  * @extends FormPage<BlockGroupFormPage>
  */
-class BlockGroupFormPage extends FormPage
+final class BlockGroupFormPage extends FormPage
 {
-
     /**
      * @return list<ComponentContract|FieldContract>
      */
@@ -30,34 +26,23 @@ class BlockGroupFormPage extends FormPage
     {
         return [
             ID::make(),
-            Text::make('Название', 'name')
+            Text::make(__('moonshine-blocks::ui.block.name'), 'name')
                 ->required()
                 ->reactive(),
-            Slug::make('Символьный код', 'slug')
+            Slug::make(__('moonshine-blocks::ui.block.slug'), 'slug')
                 ->required()
                 ->from('name')
                 ->unique()
                 ->live(),
-
-            BelongsTo::make(
-                'Группа',
-                'blockGroup',
-                resource: BlockGroupResource::class
-            )
-                ->nullable(),
-
-            Switcher::make('Множественный блок', 'is_multiple')
-                ->hint('Данная настройка отвечает за возможность создания элементов внутри блока')
-                ->default(false),
-
-            FieldsBuilder::make('Поля формы', 'fields'),
-            Switcher::make('Активен', 'is_active')->default(true),
-            Number::make('Сортировка', 'sorting')->default(500),
+            Switcher::make(__('moonshine-blocks::ui.block.is_active'), 'is_active')
+                ->default(true),
+            Number::make(__('moonshine-blocks::ui.block.sorting'), 'sorting')
+                ->default(500),
         ];
     }
 
-	protected function rules(DataWrapperContract $item): array
-	{
-		return [];
-	}
+    protected function rules(DataWrapperContract $item): array
+    {
+        return [];
+    }
 }

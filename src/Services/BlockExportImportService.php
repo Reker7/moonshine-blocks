@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Reker7\MoonShineBlocks\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Reker7\MoonShineBlocksCore\Models\Block;
 use Reker7\MoonShineBlocksCore\Models\BlockGroup;
 
@@ -76,23 +77,12 @@ final class BlockExportImportService
         ];
 
         try {
-            $json = gzuncompress(base64_decode($encoded));
-            if ($json === false) {
-                $result['errors'][] = 'Не удалось декодировать данные';
-                return $result;
-            }
-
-            $data = json_decode($json, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $result['errors'][] = 'Неверный формат JSON: ' . json_last_error_msg();
-                return $result;
-            }
-
-            if (!isset($data['version']) || $data['version'] !== self::VERSION) {
-                $result['errors'][] = 'Неподдерживаемая версия формата';
-                return $result;
-            }
+            $data = $this->decodePayload($encoded);
+        } catch (\RuntimeException $e) {
+            $result['errors'][] = $e->getMessage();
+            return $result;
         } catch (\Throwable $e) {
+            Log::error('BlockExportImportService: import decoding exception', ['error' => $e->getMessage()]);
             $result['errors'][] = 'Ошибка декодирования: ' . $e->getMessage();
             return $result;
         }
@@ -107,15 +97,9 @@ final class BlockExportImportService
                         ->where('slug', $groupData['slug'])
                         ->first();
 
-                    if ($group) {
-                        $group->update([
-                            'name' => $groupData['name'],
-                            'is_active' => $groupData['is_active'],
-                            'sorting' => $groupData['sorting'],
-                        ]);
-                    } else {
-                        $group = BlockGroup::create($groupData);
-                    }
+                    $group
+                        ? $group->update(['name' => $groupData['name'], 'is_active' => $groupData['is_active'], 'sorting' => $groupData['sorting']])
+                        : $group = BlockGroup::create($groupData);
 
                     $groupSlugToId[$groupData['slug']] = $group->id;
                     $result['groups']++;
@@ -146,11 +130,7 @@ final class BlockExportImportService
                         ->where('slug', $blockData['slug'])
                         ->first();
 
-                    if ($block) {
-                        $block->update($blockData);
-                    } else {
-                        Block::create($blockData);
-                    }
+                    $block ? $block->update($blockData) : Block::create($blockData);
 
                     $result['blocks']++;
                 } catch (\Throwable $e) {
@@ -175,30 +155,51 @@ final class BlockExportImportService
         ];
 
         try {
-            $json = gzuncompress(base64_decode($encoded));
-            if ($json === false) {
-                $result['errors'][] = 'Не удалось декодировать данные';
-                return $result;
-            }
-
-            $data = json_decode($json, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $result['errors'][] = 'Неверный формат JSON';
-                return $result;
-            }
-
-            if (!isset($data['version']) || $data['version'] !== self::VERSION) {
-                $result['errors'][] = 'Неподдерживаемая версия формата';
-                return $result;
-            }
+            $data = $this->decodePayload($encoded);
 
             $result['valid'] = true;
             $result['groups_count'] = count($data['groups'] ?? []);
             $result['blocks_count'] = count($data['blocks'] ?? []);
+        } catch (\RuntimeException $e) {
+            $result['errors'][] = $e->getMessage();
         } catch (\Throwable $e) {
+            Log::error('BlockExportImportService: validate exception', ['error' => $e->getMessage()]);
             $result['errors'][] = 'Ошибка валидации: ' . $e->getMessage();
         }
 
         return $result;
+    }
+
+    /**
+     * Decode payload string to data array.
+     *
+     * @return array<string, mixed>
+     * @throws \RuntimeException
+     */
+    private function decodePayload(string $encoded): array
+    {
+        $decoded = base64_decode($encoded, strict: true);
+        if ($decoded === false) {
+            Log::debug('BlockExportImportService: base64_decode failed', ['input_length' => strlen($encoded)]);
+            throw new \RuntimeException('Не удалось декодировать данные');
+        }
+
+        $json = gzuncompress($decoded);
+        if ($json === false) {
+            Log::debug('BlockExportImportService: gzuncompress failed', ['decoded_length' => strlen($decoded)]);
+            throw new \RuntimeException('Не удалось декодировать данные');
+        }
+
+        try {
+            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \RuntimeException('Неверный формат JSON: ' . $e->getMessage(), previous: $e);
+        }
+
+        if (! is_array($data) || ! isset($data['version']) || $data['version'] !== self::VERSION) {
+            throw new \RuntimeException('Неподдерживаемая версия формата');
+        }
+
+        return $data;
     }
 }

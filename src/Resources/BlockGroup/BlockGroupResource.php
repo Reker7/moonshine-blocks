@@ -24,36 +24,6 @@ final class BlockGroupResource extends ModelResource
     protected ?string $alias = 'block-groups';
     protected string $column = 'name';
 
-    protected function indexFields(): iterable
-    {
-        return [
-            ID::make()->sortable(),
-            Text::make('Название', 'name')->sortable(),
-            Text::make('Слаг', 'slug')->sortable(),
-            Switcher::make('Активно', 'is_active')->sortable(),
-            Number::make('Сортировка', 'sorting')->sortable(),
-        ];
-    }
-
-    protected function formFields(): iterable
-    {
-        return [
-            Box::make('Группа', [
-                ID::make(),
-                Text::make('Название', 'name')
-                    ->required()
-                    ->reactive(),
-                Slug::make('Символьный код', 'slug')
-                    ->required()
-                    ->from('name')
-                    ->unique()
-                    ->live(),
-                Switcher::make('Активно', 'is_active')->default(true),
-                Number::make('Сортировка', 'sorting')->default(500),
-            ]),
-        ];
-    }
-
     protected function rules(mixed $item): array
     {
         /** @var Model|null $item */

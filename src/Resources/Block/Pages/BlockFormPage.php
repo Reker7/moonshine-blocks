@@ -8,66 +8,83 @@ use MoonShine\Contracts\Core\TypeCasts\DataWrapperContract;
 use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Laravel\Fields\Relationships\BelongsTo;
-use MoonShine\Laravel\Fields\Relationships\BelongsToMany;
 use MoonShine\Laravel\Fields\Slug;
 use MoonShine\Laravel\Pages\Crud\FormPage;
+use MoonShine\UI\Components\Tabs;
+use MoonShine\UI\Components\Tabs\Tab;
 use MoonShine\UI\Fields\ID;
 use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
 use Reker7\MoonShineBlocks\Resources\BlockGroup\BlockGroupResource;
-use Reker7\MoonShineBlocks\Resources\FieldPreset\FieldPresetResource;
 use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder;
 
 /**
  * @extends FormPage<BlockFormPage>
  */
-class BlockFormPage extends FormPage
+final class BlockFormPage extends FormPage
 {
-    /**
-     * @return list<ComponentContract|FieldContract>
-     */
-    protected function fields(): iterable
-    {
-        return [
-            ID::make(),
-            Text::make('Название', 'name')
-                ->required()
-                ->reactive(),
-            Slug::make('Символьный код', 'slug')
-                ->required()
-                ->from('name')
-                ->unique()
-                ->live(),
+	/**
+	 * @return list<ComponentContract|FieldContract>
+	 */
+	protected function fields(): iterable
+	{
+		return [
+			ID::make(),
 
-            BelongsTo::make(
-                'Группа',
-                'blockGroup',
-                resource: BlockGroupResource::class
-            )
-                ->nullable(),
+			Tabs::make([
+				Tab::make(__('moonshine-blocks::ui.block.tab_main'), $this->mainTabFields()),
+				Tab::make(__('moonshine-blocks::ui.block.tab_fields'), $this->fieldsTabFields()),
+			]),
+		];
+	}
 
-            Switcher::make('Множественный блок', 'is_multiple')
-                ->hint('Данная настройка отвечает за возможность создания элементов внутри блока')
-                ->default(false),
+	/**
+	 * @return list<FieldContract>
+	 */
+	protected function mainTabFields(): array
+	{
+		return [
+			Text::make(__('moonshine-blocks::ui.block.name'), 'name')
+				->required()
+				->reactive(),
 
-            BelongsToMany::make(
-                __('moonshine-blocks::ui.field_preset.select_presets'),
-                'fieldPresets',
-                resource: FieldPresetResource::class
-            )
-                ->selectMode()
-                ->hint(__('moonshine-blocks::ui.field_preset.presets_hint')),
+			Slug::make(__('moonshine-blocks::ui.block.slug'), 'slug')
+				->required()
+				->from('name')
+				->unique()
+				->live(),
 
-            FieldsBuilder::make('Дополнительные поля', 'fields')
-                ->hint('Поля специфичные для этого блока (в дополнение к пресетам)'),
-            Switcher::make('Активен', 'is_active')->default(true),
-            Number::make('Сортировка', 'sorting')->default(500),
-        ];
-    }
+			BelongsTo::make(
+				__('moonshine-blocks::ui.block.group'),
+				'blockGroup',
+				resource: BlockGroupResource::class
+			)->nullable(),
 
-    protected function rules(DataWrapperContract $item): array
-    {
-        return [];
-    }
+			Switcher::make(__('moonshine-blocks::ui.block.is_multiple'), 'is_multiple')
+				->hint(__('moonshine-blocks::ui.block.is_multiple_hint'))
+				->default(false),
+
+			Switcher::make(__('moonshine-blocks::ui.block.is_active'), 'is_active')
+				->default(true),
+
+			Number::make(__('moonshine-blocks::ui.block.sorting'), 'sorting')
+				->default(500),
+		];
+	}
+
+	/**
+	 * @return list<FieldContract>
+	 */
+	protected function fieldsTabFields(): array
+	{
+		return [
+			FieldsBuilder::make(__('moonshine-blocks::ui.block.fields'), 'fields'),
+		];
+	}
+
+	protected function rules(DataWrapperContract $item): array
+	{
+		return [];
+	}
 }

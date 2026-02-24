@@ -20,7 +20,7 @@ use MoonShine\UI\Fields\Textarea;
 /**
  * @extends IndexPage<BlockIndexPage>
  */
-class BlockIndexPage extends IndexPage
+final class BlockIndexPage extends IndexPage
 {
     protected bool $withPrintButton = true;
 

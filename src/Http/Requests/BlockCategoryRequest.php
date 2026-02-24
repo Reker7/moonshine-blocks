@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class BlockCategoryRequest extends FormRequest
+final class BlockCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -33,7 +33,6 @@ class BlockCategoryRequest extends FormRequest
             ],
             'sorting' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_active' => ['sometimes', 'boolean'],
-            'meta' => ['sometimes', 'array'],
         ];
     }
 

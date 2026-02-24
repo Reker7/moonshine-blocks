@@ -17,22 +17,23 @@ use Reker7\MoonShineBlocks\Resources\Block\Pages\BlockIndexPage;
 use Reker7\MoonShineBlocks\Resources\BlockGroup\BlockGroupResource;
 use Reker7\MoonShineBlocks\Resources\BlockGroup\Pages\BlockGroupFormPage;
 use Reker7\MoonShineBlocks\Resources\BlockGroup\Pages\BlockGroupIndexPage;
-use Reker7\MoonShineBlocks\Resources\FieldPreset\FieldPresetResource;
-use Reker7\MoonShineBlocks\Resources\FieldPreset\Pages\FieldPresetFormPage;
-use Reker7\MoonShineBlocks\Resources\FieldPreset\Pages\FieldPresetIndexPage;
 use Reker7\MoonShineBlocks\Pages\BlocksTreePage;
 
 final class MoonShineBlocksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->mergeConfigFrom(
+            __DIR__ . '/../../config/fields-builder.php',
+            'fields-builder'
+        );
     }
 
     public function boot(CoreContract $core, MenuManagerContract $menu): void
     {
         $this->loadRoutesFrom(__DIR__ . '/../../routes/moonshine-blocks.php');
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'moonshine-blocks');
+        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'moonshine-blocks');
 
         $this->publishes([
             __DIR__ . '/../../config/moonshine-blocks.php' => config_path('moonshine-blocks.php'),
@@ -55,7 +56,6 @@ final class MoonShineBlocksServiceProvider extends ServiceProvider
             ->resources([
                 BlockResource::class,
                 BlockGroupResource::class,
-                FieldPresetResource::class,
             ]);
 
         $core
@@ -69,9 +69,6 @@ final class MoonShineBlocksServiceProvider extends ServiceProvider
 
                 BlockGroupIndexPage::class,
                 BlockGroupFormPage::class,
-
-                FieldPresetIndexPage::class,
-                FieldPresetFormPage::class,
 
                 BlocksTreePage::class,
             ]);

@@ -11,7 +11,6 @@ use MoonShine\MenuManager\MenuGroup;
 use MoonShine\MenuManager\MenuItem;
 use Reker7\MoonShineBlocks\Resources\Block\BlockResource;
 use Reker7\MoonShineBlocks\Resources\BlockGroup\BlockGroupResource;
-use Reker7\MoonShineBlocks\Resources\FieldPreset\FieldPresetResource;
 use Reker7\MoonShineBlocksCore\Models\Block;
 use Reker7\MoonShineBlocksCore\Models\BlockGroup;
 
@@ -52,14 +51,9 @@ final class BlocksMenu
 
     protected string $groupIcon = 'folder';
 
-    public function __construct()
-    {
-        //
-    }
-
     public static function make(): static
     {
-        return new static();
+        return new self();
     }
 
     /**
@@ -213,7 +207,7 @@ final class BlocksMenu
             ? route('moonshine.blocks.edit', ['block' => $block->slug, 'item' => $itemId])
             : route('moonshine.blocks.create', ['block' => $block->slug]);
 
-        return MenuItem::make($block->name, $url, $this->singleBlockIcon);
+        return MenuItem::make($url, $block->name, $this->singleBlockIcon);
     }
 
     /**
@@ -225,13 +219,13 @@ final class BlocksMenu
     {
         return MenuGroup::make($block->name, [
             MenuItem::make(
-                __('moonshine-blocks::ui.categories') ?: 'Categories',
                 route('moonshine.blocks.categories.index', ['block' => $block->slug]),
+                __('moonshine-blocks::ui.categories'),
                 $this->categoriesIcon
             ),
             MenuItem::make(
-                __('moonshine-blocks::ui.items_list') ?: 'Elements',
                 route('moonshine.blocks.index', ['block' => $block->slug]),
+                __('moonshine-blocks::ui.items_list'),
                 $this->itemsIcon
             ),
         ], $this->multipleBlockIcon);
@@ -313,19 +307,14 @@ final class BlocksMenu
     {
         return [
             MenuItem::make(
-                'Блоки',
                 app(BlockResource::class)->getUrl(),
+                __('moonshine-blocks::ui.menu.blocks'),
                 'rectangle-stack'
             ),
             MenuItem::make(
-                'Группы блоков',
                 app(BlockGroupResource::class)->getUrl(),
+                __('moonshine-blocks::ui.menu.groups'),
                 'folder'
-            ),
-            MenuItem::make(
-                'Пресеты полей',
-                app(FieldPresetResource::class)->getUrl(),
-                'clipboard-document-list'
             ),
         ];
     }

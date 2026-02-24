@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Reker7\MoonShineBlocks;
 
 use MoonShine\Contracts\UI\FieldContract;
-use MoonShine\UI\Fields\Fieldset;
-use MoonShine\UI\Fields\Json;
+use MoonShine\UI\Fields\Template;
 use Reker7\MoonShineBlocksCore\Models\Block;
-use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder\FieldsCollection;
 
 /**
  * Собирает набор MoonShine-полей для редактирования значений блоков (BlockItem).
@@ -16,79 +14,53 @@ use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder\FieldsCollection;
  * Использует JSON-конфиг полей из Block->fields.
  *
  * Usage:
- *   $dynamicFields = (new BuildBlockItemFields())->buildForBlock($block);
+ *   $dynamicFields = (new BuildBlockItemFields())->buildForBlock($block); // returns FieldContract[]
  */
 final class BuildBlockItemFields
 {
     /**
      * Построить поля для конкретного блока.
-     * Возвращает Json::object() с динамическими полями внутри.
      *
-     * Поля из пресетов оборачиваются в Fieldset с названием пресета.
+     * Возвращает массив с одним Template полем, обёртывающим все поля блока.
+     * Fieldset sub-fields встраиваются плоско (без Fieldset::make() обёртки).
+     *
+     * Используем Template вместо Json::object по следующим причинам:
+     * - Fieldset implements FieldsWrapperContract → onlyFields() разворачивает его
+     * - Fieldset::resolveFill() не вызывается → getData() = null → prepareFields()
+     *   заполняет sub-fields из [] → значения теряются при рендере
+     * - Template с явными changeFill/changeRender/onApply обходит эту проблему
+     *
+     * Sub-fields используют plain колонки ('title', не 'data.title').
+     * Template::wrapNames('data') делает HTML инпуты data[title], data[meta_title].
+     *
+     * @return list<FieldContract>
      */
-    public function buildForBlock(Block $block, string $root = 'data'): FieldContract
+    public function buildForBlock(Block $block): array
     {
-        // Ensure fieldPresets relation is loaded
-        $block->loadMissing('fieldPresets');
+        $collection = $block->getFieldsCollection();
 
-        $groupedFields = $block->getGroupedFields();
-
-        if (empty($groupedFields)) {
-            return Json::make('', 'data')->object()->fields([]);
+        if ($collection->isEmpty()) {
+            return [];
         }
 
-        $allFields = $this->buildGroupedFields($groupedFields, $root);
+        $fields = BuildFieldsFromConfig::make($collection, '')->buildFlat();
 
-        return Json::make('', 'data')->object()->fields($allFields);
+        return [BlockDataTemplate::make($fields)];
     }
 
     /**
      * Построить массив полей (без обёртки Json::object)
      *
-     * Поля из пресетов оборачиваются в Fieldset с названием пресета.
-     *
      * @return list<FieldContract>
      */
     public function buildFieldsArray(Block $block, string $root = 'data'): array
     {
-        // Ensure fieldPresets relation is loaded
-        $block->loadMissing('fieldPresets');
+        $collection = $block->getFieldsCollection();
 
-        $groupedFields = $block->getGroupedFields();
-
-        return $this->buildGroupedFields($groupedFields, $root);
-    }
-
-    /**
-     * Build fields from grouped structure, wrapping presets in Fieldset
-     *
-     * @param array<int, array{name: string|null, fields: array}> $groups
-     * @return list<FieldContract>
-     */
-    private function buildGroupedFields(array $groups, string $root): array
-    {
-        $result = [];
-
-        foreach ($groups as $group) {
-            $collection = FieldsCollection::fromMixed($group['fields']);
-
-            if ($collection->isEmpty()) {
-                continue;
-            }
-
-            $fields = BuildFieldsFromConfig::make($collection, $root)->build();
-
-            if ($group['name'] !== null) {
-                // Wrap preset fields in Fieldset
-                $result[] = Fieldset::make($group['name'], $fields);
-            } else {
-                // Custom fields without wrapper
-                foreach ($fields as $field) {
-                    $result[] = $field;
-                }
-            }
+        if ($collection->isEmpty()) {
+            return [];
         }
 
-        return $result;
+        return BuildFieldsFromConfig::make($collection, $root)->build();
     }
 }

@@ -12,7 +12,7 @@ use Reker7\MoonShineBlocksCore\Models\BlockGroup;
 /**
  * API controller for block relation field options.
  */
-class BlockRelationApiController extends Controller
+final class BlockRelationApiController extends Controller
 {
     /**
      * Get multiple blocks for selection.

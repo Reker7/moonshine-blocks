@@ -20,6 +20,18 @@ return [
     'editing' => 'Editing',
     'creating' => 'Creating',
 
+    // Toast messages
+    'item_created' => 'Item created',
+    'item_saved' => 'Changes saved',
+    'item_deleted' => 'Item deleted',
+    'save_error' => 'Save error',
+
+    // Admin settings menu
+    'menu' => [
+        'blocks' => 'Blocks',
+        'groups' => 'Block groups',
+    ],
+
     // Pages
     'block_item' => 'Block item',
     'block_items' => 'Block items',
@@ -27,7 +39,12 @@ return [
     'categories' => 'Categories',
     'items_list' => 'Items',
 
-    // Fields
+    // Tabs
+    'main' => 'Main',
+    'fields_tab' => 'Fields',
+    'content' => 'Content',
+
+    // Fields (table columns)
     'fields' => [
         'name' => 'Name',
         'slug' => 'Slug',
@@ -63,63 +80,47 @@ return [
         'partial_success' => 'Imported: :groups groups, :blocks blocks. Errors: :errors',
     ],
 
-    // FieldsBuilder
-    'name' => 'Name',
-    'key' => 'Key',
-    'type' => 'Type',
-    'required' => 'Required',
-    'required_short' => 'Req',
-    'field_name' => 'Field name',
-    'field_key' => 'Field key',
-    'field_type' => 'Field type',
-    'add_field' => 'Add field',
-    'settings' => 'Settings',
-    'no_fields' => 'No fields added yet',
-    'field_settings' => 'Field settings',
-    'placeholder' => 'Placeholder',
-    'default_value' => 'Default value',
-    'hint' => 'Hint',
-    'options' => 'Options',
-    'value' => 'Value',
-    'label' => 'Label',
-    'option_value' => 'Value',
-    'option_label' => 'Label',
-    'no_options' => 'No options',
-    'add_option' => 'Add option',
-    'min' => 'Min',
-    'max' => 'Max',
-    'step' => 'Step',
-    'nested_fields' => 'Nested fields',
-    'no_nested_fields' => 'No nested fields',
-    'add_nested_field' => 'Add nested field',
-    'actions' => 'Actions',
-
-    // Preview
-    'field' => 'field',
-    'fields' => 'fields',
-
-    'field_types' => [
-        'text' => 'Text',
-        'textarea' => 'Textarea',
-        'number' => 'Number',
-        'email' => 'Email',
-        'phone' => 'Phone',
-        'password' => 'Password',
-        'date' => 'Date',
-        'datetime' => 'Date and time',
-        'checkbox' => 'Checkbox',
-        'switcher' => 'Switcher',
-        'select' => 'Select',
-        'radio' => 'Radio buttons',
-        'file' => 'File',
-        'image' => 'Image',
-        'color' => 'Color',
-        'url' => 'URL',
-        'range' => 'Range',
-        'json' => 'JSON',
-        'code' => 'Code',
-        'markdown' => 'Markdown',
-        'tinymce' => 'TinyMCE Editor',
-        'nested' => 'Nested fields',
+    // Block form
+    'block' => [
+        'tab_main' => 'Main',
+        'tab_fields' => 'Block fields',
+        'name' => 'Name',
+        'slug' => 'Slug',
+        'group' => 'Group',
+        'is_multiple' => 'Multiple block',
+        'is_multiple_hint' => 'This setting controls the ability to create items inside the block',
+        'is_active' => 'Active',
+        'sorting' => 'Sorting',
+        'fields' => 'Block fields',
     ],
+
+    // Fieldset field type
+    'fieldset' => [
+        'label'                => 'Fieldset',
+        'select_label'         => 'Fieldset',
+        'select_placeholder'   => '— Select fieldset —',
+        'no_fieldsets'         => 'No fieldsets available.',
+        'defaults_label'       => 'Default values',
+        'no_defaults_available' => 'This fieldset has no fields that support default values.',
+    ],
+
+    // Block relation field type
+    'block_relation' => [
+        'label' => 'Block relation',
+        'title' => 'Relation settings',
+        'relation_type' => 'Relation type',
+        'type_block' => 'Link to block',
+        'type_group' => 'Link to group',
+        'relation_type_hint' => 'Block — select items from a multiple block. Group — select blocks from a group.',
+        'select_block' => 'Select block',
+        'select_group' => 'Select group',
+        'select_placeholder' => '— Select —',
+        'select_block_hint' => 'Items from this block will be available for selection.',
+        'select_group_hint' => 'Blocks from this group will be available for selection.',
+        'multiple' => 'Multiple selection',
+        'multiple_hint' => 'Allows selecting multiple items.',
+        'no_blocks' => 'No multiple blocks available.',
+        'no_groups' => 'No groups available.',
+    ],
+
 ];

@@ -13,9 +13,24 @@ return [
     'save' => 'Сохранить',
     'create' => 'Создать',
     'back' => 'Назад',
+    'close' => 'Закрыть',
+    'done' => 'Готово',
+    'delete' => 'Удалить',
     'delete_confirm' => 'Вы уверены, что хотите удалить?',
     'editing' => 'Редактирование',
     'creating' => 'Создание',
+
+    // Toast messages
+    'item_created' => 'Элемент создан',
+    'item_saved' => 'Изменения сохранены',
+    'item_deleted' => 'Элемент удалён',
+    'save_error' => 'Ошибка сохранения',
+
+    // Admin settings menu
+    'menu' => [
+        'blocks' => 'Блоки',
+        'groups' => 'Группы блоков',
+    ],
 
     // Pages
     'block_item' => 'Элемент блока',
@@ -24,7 +39,12 @@ return [
     'categories' => 'Категории',
     'items_list' => 'Элементы',
 
-    // Fields
+    // Tabs
+    'main' => 'Основное',
+    'fields_tab' => 'Поля',
+    'content' => 'Контент',
+
+    // Fields (table columns)
     'fields' => [
         'name' => 'Название',
         'slug' => 'Слаг',
@@ -60,65 +80,47 @@ return [
         'partial_success' => 'Импортировано: :groups групп, :blocks блоков. Ошибок: :errors',
     ],
 
-    // Field Presets
-    'field_preset' => [
-        'description' => 'Описание',
-        'fields' => 'Поля пресета',
-        'select_presets' => 'Выберите пресеты',
-        'presets_hint' => 'Поля из выбранных пресетов будут добавлены к форме блока',
+    // Block form
+    'block' => [
+        'tab_main' => 'Основное',
+        'tab_fields' => 'Поля блока',
+        'name' => 'Название',
+        'slug' => 'Символьный код',
+        'group' => 'Группа',
+        'is_multiple' => 'Множественный блок',
+        'is_multiple_hint' => 'Данная настройка отвечает за возможность создания элементов внутри блока',
+        'is_active' => 'Активен',
+        'sorting' => 'Сортировка',
+        'fields' => 'Поля блока',
     ],
 
-    // FieldsBuilder
-    'name' => 'Название',
-    'key' => 'Ключ',
-    'type' => 'Тип',
-    'required' => 'Обязательное',
-    'field_name' => 'Название поля',
-    'field_key' => 'ключ_поля',
-    'field_type' => 'Тип поля',
-    'settings' => 'Настройки',
-    'no_fields' => 'Поля ещё не добавлены',
-    'field_settings' => 'Настройки поля',
-    'placeholder' => 'Плейсхолдер',
-    'default_value' => 'Значение по умолчанию',
-    'hint' => 'Подсказка',
-    'options' => 'Опции',
-    'value' => 'Значение',
-    'label' => 'Подпись',
-    'option_value' => 'значение',
-    'option_label' => 'Подпись',
-    'no_options' => 'Нет опций',
-    'add_option' => 'Добавить опцию',
-    'min' => 'Мин',
-    'max' => 'Макс',
-    'step' => 'Шаг',
-    'nested_fields' => 'Вложенные поля',
-    'no_nested_fields' => 'Нет вложенных полей',
-    'add_nested_field' => 'Добавить вложенное поле',
-    'actions' => 'Действия',
-
-    'field_types' => [
-        'text' => 'Текст',
-        'textarea' => 'Многострочный текст',
-        'number' => 'Число',
-        'email' => 'Email',
-        'phone' => 'Телефон',
-        'password' => 'Пароль',
-        'date' => 'Дата',
-        'datetime' => 'Дата и время',
-        'checkbox' => 'Чекбокс',
-        'switcher' => 'Переключатель',
-        'select' => 'Выпадающий список',
-        'radio' => 'Радиокнопки',
-        'file' => 'Файл',
-        'image' => 'Изображение',
-        'color' => 'Цвет',
-        'url' => 'Ссылка',
-        'range' => 'Диапазон',
-        'json' => 'JSON',
-        'code' => 'Код',
-        'markdown' => 'Markdown',
-        'tinymce' => 'Редактор TinyMCE',
-        'nested' => 'Вложенные поля',
+    // Fieldset field type
+    'fieldset' => [
+        'label'                => 'Набор полей',
+        'select_label'         => 'Набор полей',
+        'select_placeholder'   => '— Выберите набор —',
+        'no_fieldsets'         => 'Нет доступных наборов полей.',
+        'defaults_label'       => 'Значения по умолчанию',
+        'no_defaults_available' => 'В этом наборе нет полей с поддержкой дефолтных значений.',
     ],
+
+    // Block relation field type
+    'block_relation' => [
+        'label' => 'Связь с блоком',
+        'title' => 'Настройки связи',
+        'relation_type' => 'Тип связи',
+        'type_block' => 'Привязка к блоку',
+        'type_group' => 'Привязка к группе',
+        'relation_type_hint' => 'Блок — выбор элементов из множественного блока. Группа — выбор блоков из группы.',
+        'select_block' => 'Выберите блок',
+        'select_group' => 'Выберите группу',
+        'select_placeholder' => '— Выберите —',
+        'select_block_hint' => 'Элементы этого блока будут доступны для выбора.',
+        'select_group_hint' => 'Блоки из этой группы будут доступны для выбора.',
+        'multiple' => 'Множественный выбор',
+        'multiple_hint' => 'Позволяет выбрать несколько элементов.',
+        'no_blocks' => 'Нет доступных множественных блоков.',
+        'no_groups' => 'Нет доступных групп.',
+    ],
+
 ];

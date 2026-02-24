@@ -10,12 +10,11 @@ use MoonShine\Laravel\Resources\ModelResource;
 use Reker7\MoonShineBlocks\Resources\Block\Pages\BlockFormPage;
 use Reker7\MoonShineBlocks\Resources\Block\Pages\BlockIndexPage;
 use Reker7\MoonShineBlocksCore\Models\Block;
-use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder;
 
 /**
  * @extends ModelResource<Block>
  */
-class BlockResource extends ModelResource
+final class BlockResource extends ModelResource
 {
     protected string $model = Block::class;
 
@@ -26,9 +25,9 @@ class BlockResource extends ModelResource
     protected function rules(mixed $item): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:blocks,slug,' . ($item->id ?? 'null')],
-            'sorting' => ['integer', 'min:0'],
+            'name'      => ['required', 'string', 'max:255'],
+            'slug'      => ['required', 'string', 'max:255', 'unique:blocks,slug,' . ($item->id ?? 'null')],
+            'sorting'   => ['integer', 'min:0'],
             'is_active' => ['boolean'],
         ];
     }

@@ -9,8 +9,10 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class BlockItemRequest extends FormRequest
+final class BlockItemRequest extends FormRequest
 {
+    private ?Block $resolvedBlock = null;
+
     public function authorize(): bool
     {
         return true;
@@ -18,9 +20,7 @@ class BlockItemRequest extends FormRequest
 
     public function rules(): array
     {
-        $block = Block::query()
-            ->where('slug', (string) $this->route('block'))
-            ->firstOrFail();
+        $block = $this->resolveBlock();
 
         $itemId = (int) $this->route('item');
 
@@ -44,7 +44,6 @@ class BlockItemRequest extends FormRequest
             ],
 
             'data' => ['sometimes', 'array'],
-            'uuid' => ['prohibited'],
         ];
     }
 
@@ -78,18 +77,28 @@ class BlockItemRequest extends FormRequest
         ]);
     }
 
+    private function resolveBlock(): Block
+    {
+        if ($this->resolvedBlock === null) {
+            $blockParam = $this->route('block');
+
+            $this->resolvedBlock = $blockParam instanceof Block
+                ? $blockParam
+                : Block::query()->where('slug', (string) $blockParam)->firstOrFail();
+        }
+
+        return $this->resolvedBlock;
+    }
+
     /**
      * @return array{0:int,1:int|null}
      */
     private function resolveRouteIds(): array
     {
-        $blockParam = $this->route('block');
-        $blockId = $blockParam instanceof Block
-            ? (int)$blockParam->getKey()
-            : (int)Block::query()->where('slug', (string)$blockParam)->value('id');
+        $blockId = (int) $this->resolveBlock()->getKey();
 
-        $item = $this->route('item');
-        $itemId = is_object($item) ? (int)$item->getKey() : ($item ? (int)$item : null);
+        $item   = $this->route('item');
+        $itemId = is_object($item) ? (int) $item->getKey() : ($item ? (int) $item : null);
 
         return [$blockId, $itemId];
     }

@@ -9,6 +9,7 @@ use MoonShine\Support\DTOs\Select\Option;
 use MoonShine\Support\DTOs\Select\Options;
 use MoonShine\UI\Fields\Date;
 use MoonShine\UI\Fields\File;
+use MoonShine\UI\Fields\Fieldset;
 use MoonShine\UI\Fields\Image;
 use MoonShine\UI\Fields\Json;
 use MoonShine\UI\Fields\Number;
@@ -16,7 +17,9 @@ use MoonShine\UI\Fields\Select;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
 use MoonShine\UI\Fields\Textarea;
+use Reker7\MoonShineBlocks\Support\FieldsetLoader;
 use Reker7\MoonShineBlocksCore\Models\Block;
+use Reker7\MoonShineFieldsBuilder\Support\Json as JsonSupport;
 use Reker7\MoonShineBlocksCore\Models\BlockGroup;
 use Reker7\MoonShineBlocksCore\Models\BlockItem;
 use Reker7\MoonShineFieldsBuilder\Fields\FieldsBuilder\FieldItem as ConfigFieldItem;
@@ -37,6 +40,9 @@ final class BuildFieldsFromConfig
     private FieldsCollection $collection;
 
     private string $root;
+
+    /** @var array<string, mixed> */
+    private array $defaults = [];
 
     /**
      * @param FieldsCollection|array<int, array<string, mixed>>|string|null $config
@@ -62,6 +68,18 @@ final class BuildFieldsFromConfig
     }
 
     /**
+     * Set default values for fields (keyed by field key)
+     *
+     * @param array<string, mixed> $defaults
+     */
+    public function withDefaults(array $defaults): self
+    {
+        $this->defaults = $defaults;
+
+        return $this;
+    }
+
+    /**
      * Build array of MoonShine fields
      *
      * @return list<FieldContract>
@@ -71,6 +89,42 @@ final class BuildFieldsFromConfig
         $fields = [];
 
         foreach ($this->collection->all() as $item) {
+            if ($item->type === 'fieldset') {
+                $fieldset = $this->fieldset($item);
+                if ($fieldset !== null) {
+                    $fields[] = $fieldset;
+                }
+                continue;
+            }
+
+            $fields[] = $this->makeField($item, $this->root);
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Build fields flattened — fieldset sub-fields expanded directly into the array.
+     *
+     * Unlike build(), fieldset types are NOT wrapped in Fieldset::make().
+     * Their sub-fields are added at the same level as regular fields.
+     *
+     * Use this for Template-based forms (BlockDataTemplate) where Fieldset as
+     * FieldsWrapperContract breaks the fill chain.
+     *
+     * @return list<FieldContract>
+     */
+    public function buildFlat(): array
+    {
+        $fields = [];
+
+        foreach ($this->collection->all() as $item) {
+            if ($item->type === 'fieldset') {
+                $subFields = $this->fieldsetSubFields($item);
+                array_push($fields, ...$subFields);
+                continue;
+            }
+
             $fields[] = $this->makeField($item, $this->root);
         }
 
@@ -106,7 +160,7 @@ final class BuildFieldsFromConfig
             'datetime' => Date::make($label, $name)->withTime(),
             'phone' => $this->phone($label, $name, $item),
             'select' => $this->select($label, $name, $item),
-            'json', 'nested' => $this->json($label, $name, $item),
+            'repeater' => $this->json($label, $name, $item),
             'image' => Image::make($label, $name)->dir('fields'),
             'file' => File::make($label, $name)->dir('fields'),
             'block_relation' => $this->blockRelation($label, $name, $item),
@@ -122,9 +176,10 @@ final class BuildFieldsFromConfig
             $field->hint($hint);
         }
 
-        $defaultValue = $item->defaultValue();
+        $defaultValue = $this->getDefaultValue($item->key, $item->defaultValue());
         if (
-            $defaultValue !== ''
+            $defaultValue !== null
+            && $defaultValue !== ''
             && $item->type !== 'select'
             && method_exists($field, 'default')
         ) {
@@ -132,6 +187,18 @@ final class BuildFieldsFromConfig
         }
 
         return $field;
+    }
+
+    /**
+     * Get default value for a field (from defaults array or field config)
+     */
+    private function getDefaultValue(string $key, string $configDefault): mixed
+    {
+        if ($key !== '' && array_key_exists($key, $this->defaults)) {
+            return $this->defaults[$key];
+        }
+
+        return $configDefault;
     }
 
     /**
@@ -229,7 +296,8 @@ final class BuildFieldsFromConfig
 
         $values = $item->values();
         if ($values !== []) {
-            $options = $this->buildSelectOptions($values, $item->defaultValue());
+            $defaultValue = $this->getDefaultValue($item->key, $item->defaultValue());
+            $options = $this->buildSelectOptions($values, (string) $defaultValue);
             if ($options !== []) {
                 $field->options(new Options($options));
             }
@@ -252,7 +320,7 @@ final class BuildFieldsFromConfig
      */
     private function json(string $label, string $name, ConfigFieldItem $item): FieldContract
     {
-        $json = Json::make($label, $name);
+        $json = Json::make($label, $name)->creatable()->removable();
 
         if ($item->fields !== []) {
             $nestedFields = [];
@@ -262,9 +330,6 @@ final class BuildFieldsFromConfig
             }
 
             $json->fields($nestedFields);
-            $json->creatable()->removable();
-        } else {
-            $json->keyValue('Key', 'Value');
         }
 
         return $json;
@@ -307,8 +372,8 @@ final class BuildFieldsFromConfig
      */
     private function blockRelation(string $label, string $name, ConfigFieldItem $item): FieldContract
     {
-        $relationType = $item->relationType();
-        $relationTarget = $item->relationTarget();
+        $relationType = (string) ($item->option('relation_type', 'block') ?: 'block');
+        $relationTarget = (string) ($item->option('relation_target', '') ?: '');
         $isMultiple = $item->isMultiple();
 
         $field = Select::make($label, $name)->native();
@@ -332,6 +397,91 @@ final class BuildFieldsFromConfig
         }
 
         return $field;
+    }
+
+    /**
+     * Get sub-fields for a fieldset item as a flat array (no Fieldset wrapper).
+     * Used by buildFlat() to expand fieldset sub-fields into the parent array.
+     *
+     * @return list<FieldContract>
+     */
+    private function fieldsetSubFields(ConfigFieldItem $item): array
+    {
+        $path = function_exists('config')
+            ? (string) config('moonshine-blocks.fieldsets.path', resource_path('blocks/fieldsets'))
+            : '';
+
+        if ($path === '') {
+            return [];
+        }
+
+        $data = (new FieldsetLoader($path))->load($item->key);
+
+        if ($data === null) {
+            return [];
+        }
+
+        $defaults = $this->resolveFieldsetDefaults($item);
+
+        return BuildFieldsFromConfig::make($data['fields'], $this->root)
+            ->withDefaults($defaults)
+            ->build();
+    }
+
+    /**
+     * Build a Fieldset component from a fieldset FieldItem.
+     * Loads the JSON file, applies defaults, wraps sub-fields in Fieldset::make().
+     * Returns null when the fieldset file is not found or produces no fields.
+     */
+    private function fieldset(ConfigFieldItem $item): ?FieldContract
+    {
+        $path = function_exists('config')
+            ? (string) config('moonshine-blocks.fieldsets.path', resource_path('blocks/fieldsets'))
+            : '';
+
+        if ($path === '') {
+            return null;
+        }
+
+        $data = (new FieldsetLoader($path))->load($item->key);
+
+        if ($data === null) {
+            return null;
+        }
+
+        $title    = $item->name !== '' ? $item->name : $data['title'];
+        $defaults = $this->resolveFieldsetDefaults($item);
+
+        $subFields = BuildFieldsFromConfig::make($data['fields'], $this->root)
+            ->withDefaults($defaults)
+            ->build();
+
+        if ($subFields === []) {
+            return null;
+        }
+
+        return Fieldset::make($title, $subFields);
+    }
+
+    /**
+     * Decode default_value option for a fieldset item.
+     * Accepts an array or a JSON-encoded string → returns key-value map.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveFieldsetDefaults(ConfigFieldItem $item): array
+    {
+        $raw = $item->option('default_value');
+
+        if (is_array($raw)) {
+            return $raw;
+        }
+
+        if (is_string($raw) && $raw !== '') {
+            return JsonSupport::decodeArray($raw) ?? [];
+        }
+
+        return [];
     }
 
     /**
@@ -360,28 +510,30 @@ final class BuildFieldsFromConfig
                     ->orderBy('sorting')
                     ->get();
             }
-        } elseif ($type === 'group') {
+        }
+
+        if ($type === 'group') {
             // Get blocks from group - for group relation, we select BLOCKS not items
             $group = BlockGroup::query()
                 ->where('slug', $target)
                 ->where('is_active', true)
                 ->first();
 
-            if ($group) {
-                // For group relation - return blocks themselves as options
-                $blocks = $group->blocks()
-                    ->where('is_active', true)
-                    ->orderBy('sorting')
-                    ->get();
+            if (! $group) {
+                return [];
+            }
 
-                // Return blocks as options (not items)
-                return $blocks->map(fn (Block $block) => new Option(
+            // For group relation - return blocks themselves as options
+            return $group->blocks()
+                ->where('is_active', true)
+                ->orderBy('sorting')
+                ->get()
+                ->map(fn (Block $block) => new Option(
                     label: $block->name,
                     value: $block->slug,
                     selected: false,
                     properties: null
                 ))->values()->all();
-            }
         }
 
         return $items->map(fn (BlockItem $item) => new Option(

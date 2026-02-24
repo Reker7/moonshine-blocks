@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Reker7\MoonShineBlocks\Resources\BlockGroup\Pages;
 
 use MoonShine\Contracts\UI\FieldContract;
-use MoonShine\Laravel\Pages\Crud\FormPage;
-use MoonShine\Laravel\QueryTags\QueryTag;
+use MoonShine\Laravel\Pages\Crud\IndexPage;
 use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
 
 /**
- * @extends FormPage<BlockGroupIndexPage>
+ * @extends IndexPage<BlockGroupIndexPage>
  */
-class BlockGroupIndexPage extends FormPage
+final class BlockGroupIndexPage extends IndexPage
 {
     protected bool $withPrintButton = true;
 
@@ -24,18 +23,10 @@ class BlockGroupIndexPage extends FormPage
     protected function fields(): iterable
     {
         return [
-            Text::make('Название', 'name')->sortable(),
-            Text::make('Слаг', 'slug')->sortable(),
-            Switcher::make('Активен', 'is_active'),
-            Number::make('Сортировка', 'sorting')->default(500),
+            Text::make(__('moonshine-blocks::ui.block.name'), 'name')->sortable(),
+            Text::make(__('moonshine-blocks::ui.block.slug'), 'slug')->sortable(),
+            Switcher::make(__('moonshine-blocks::ui.block.is_active'), 'is_active'),
+            Number::make(__('moonshine-blocks::ui.block.sorting'), 'sorting')->default(500),
         ];
-    }
-
-    /**
-     * @return list<QueryTag>
-     */
-    protected function queryTags(): array
-    {
-        return [];
     }
 }

@@ -115,10 +115,15 @@ final class BlocksTreePage extends Page
     protected function getRowButtons(): array
     {
         return [
-            ActionButton::make('')
+            ActionButton::make(
+                '',
+                static fn ($item) => is_array($item)
+                    ? route('moonshine.blocks.edit', ['block' => $item['slug'] ?? ''])
+                    : '#'
+            )
                 ->icon('pencil')
                 ->primary()
-                ->onClick(fn() => "alert('Edit: ' + \$el.closest('tr').dataset.id)"),
+                ->canSee(static fn ($item) => is_array($item) && ($item['entity_type'] ?? '') === 'block'),
         ];
     }
 

@@ -8,6 +8,7 @@
         "admin"
     ],
     "type": "library",
+    "version": "1.0.0",
     "license": "MIT",
     "require": {
         "php": "^8.1|^8.2|^8.4",
@@ -29,7 +30,9 @@
     "autoload-dev": {
         "psr-4": {
             "Reker7\\MoonShineBlocks\\Tests\\": "tests/",
-            "Reker7\\MoonShineBlocks\\Database\\Factories\\": "database/factories/"
+            "Reker7\\MoonShineBlocks\\Database\\Factories\\": "database/factories/",
+            "Reker7\\MoonShineBlocksCore\\": "../moonshine-blocks-core/src/",
+            "Reker7\\MoonShineFieldsBuilder\\": "../moonshine-fields-builder/src/"
         }
     },
     "conflict": {

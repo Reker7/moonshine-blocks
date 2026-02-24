@@ -9,31 +9,23 @@ use MoonShine\Contracts\UI\ActionButtonContract;
 use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Laravel\Fields\Slug;
-use MoonShine\Laravel\Pages\Page;
 use MoonShine\UI\Components\ActionButton;
 use MoonShine\UI\Components\ActionGroup;
-use MoonShine\UI\Components\FlexibleRender;
 use MoonShine\UI\Components\FormBuilder;
 use MoonShine\UI\Components\Heading;
 use MoonShine\UI\Components\Layout\Box;
 use MoonShine\UI\Components\Layout\Flex;
 use MoonShine\UI\Components\Layout\LineBreak;
-use MoonShine\UI\Fields\Hidden;
 use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
+use Reker7\MoonShineBlocks\Pages\AbstractBlockFormPage;
 use Reker7\MoonShineBlocksCore\Models\Block;
 use Reker7\MoonShineBlocksCore\Models\BlockCategory;
 
-final class FormBlockCategoryPage extends Page
+final class FormBlockCategoryPage extends AbstractBlockFormPage
 {
-    protected ?Block $block = null;
-
     protected ?BlockCategory $category = null;
-
-    // ==========================================
-    // Public API Methods
-    // ==========================================
 
     public function getTitle(): string
     {
@@ -64,10 +56,6 @@ final class FormBlockCategoryPage extends Page
         ];
     }
 
-    // ==========================================
-    // Lifecycle Methods
-    // ==========================================
-
     protected function prepareBeforeRender(): void
     {
         parent::prepareBeforeRender();
@@ -76,32 +64,12 @@ final class FormBlockCategoryPage extends Page
             return;
         }
 
-        if (! $this->getBlock()) {
-            throw new ModelNotFoundException('Block not found');
-        }
+        $this->ensureBlockExists();
 
         if (request()->route('category') && ! $this->getCategory()) {
             throw new ModelNotFoundException('Category not found');
         }
     }
-
-    /**
-     * @return list<ComponentContract>
-     */
-    protected function components(): iterable
-    {
-        if (! $this->getBlock()) {
-            return [
-                FlexibleRender::make(__('moonshine-blocks::ui.block_not_found')),
-            ];
-        }
-
-        return $this->getLayers();
-    }
-
-    // ==========================================
-    // Layer Methods
-    // ==========================================
 
     /**
      * @return list<ComponentContract>
@@ -141,10 +109,6 @@ final class FormBlockCategoryPage extends Page
         ];
     }
 
-    // ==========================================
-    // Button Methods
-    // ==========================================
-
     /**
      * @return list<ActionButtonContract>
      */
@@ -157,10 +121,6 @@ final class FormBlockCategoryPage extends Page
             )->secondary()->icon('arrow-left'),
         ];
     }
-
-    // ==========================================
-    // Component Builders
-    // ==========================================
 
     protected function getFormComponent(Block $block): FormBuilder
     {
@@ -187,10 +147,6 @@ final class FormBlockCategoryPage extends Page
 
         return $form;
     }
-
-    // ==========================================
-    // Field Definitions
-    // ==========================================
 
     /**
      * @return list<FieldContract>
@@ -223,27 +179,9 @@ final class FormBlockCategoryPage extends Page
                 ->default(true),
 
             Number::make(__('moonshine-blocks::ui.sorting'), 'sorting')
-                ->default(500),
+                ->default(config('moonshine-blocks.ui.sorting_default', 500)),
         ];
     }
-
-    /**
-     * @return list<FieldContract>
-     */
-    protected function systemFields(string $method): array
-    {
-        if (strtoupper($method) !== 'PUT') {
-            return [];
-        }
-
-        return [
-            Hidden::make('_method')->setValue('PUT'),
-        ];
-    }
-
-    // ==========================================
-    // Helper Methods
-    // ==========================================
 
     /**
      * @return array{0: string, 1: string}
@@ -269,36 +207,6 @@ final class FormBlockCategoryPage extends Page
     protected function isEditMode(): bool
     {
         return $this->getCategory() !== null;
-    }
-
-    protected function isReactiveRequest(): bool
-    {
-        return request()->boolean('_async')
-            || request()->has('_component_name')
-            || request()->has('_fragment');
-    }
-
-    // ==========================================
-    // Data Retrieval
-    // ==========================================
-
-    protected function getBlock(): ?Block
-    {
-        if ($this->block !== null) {
-            return $this->block;
-        }
-
-        $param = request()->route('block');
-
-        if ($param instanceof Block) {
-            return $this->block = $param;
-        }
-
-        $slug = (string) ($param ?? '');
-
-        return $this->block = $slug !== ''
-            ? Block::query()->where('slug', $slug)->first()
-            : null;
     }
 
     protected function getCategory(): ?BlockCategory

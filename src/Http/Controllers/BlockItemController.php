@@ -31,7 +31,7 @@ final class BlockItemController extends MoonShineController
         return $page->loaded();
     }
 
-    public function store(Request $request, FormBlockItemPage $page): MoonShineJsonResponse
+    public function store(BlockItemRequest $request, FormBlockItemPage $page): MoonShineJsonResponse
     {
         $block = $this->resolveBlock($request);
 
@@ -53,9 +53,9 @@ final class BlockItemController extends MoonShineController
 
         return MoonShineJsonResponse::make()
             ->toast(
-                $ok ? 'Элемент создан' : 'Ошибка сохранения',
+                $ok ? __('moonshine-blocks::ui.item_created') : __('moonshine-blocks::ui.save_error'),
                 $ok ? ToastType::SUCCESS : ToastType::ERROR,
-                duration: 2500
+                duration: config('moonshine-blocks.ui.toast_duration', 2500)
             )
             ->redirect(
                 route('moonshine.blocks.edit', [
@@ -84,9 +84,9 @@ final class BlockItemController extends MoonShineController
 
         return MoonShineJsonResponse::make()
             ->toast(
-                $ok ? 'Изменения сохранены' : 'Ошибка сохранения',
+                $ok ? __('moonshine-blocks::ui.item_saved') : __('moonshine-blocks::ui.save_error'),
                 $ok ? ToastType::SUCCESS : ToastType::ERROR,
-                duration: 2500
+                duration: config('moonshine-blocks.ui.toast_duration', 2500)
             );
     }
 
@@ -98,7 +98,7 @@ final class BlockItemController extends MoonShineController
         $item->delete();
 
         return MoonShineJsonResponse::make()
-            ->toast('Элемент удалён', ToastType::SUCCESS, duration: 2500)
+            ->toast(__('moonshine-blocks::ui.item_deleted'), ToastType::SUCCESS, duration: config('moonshine-blocks.ui.toast_duration', 2500))
             ->redirect(route('moonshine.blocks.index', ['block' => $block->slug]));
     }
 

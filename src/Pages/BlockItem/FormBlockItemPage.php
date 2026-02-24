@@ -9,11 +9,9 @@ use MoonShine\Contracts\UI\ActionButtonContract;
 use MoonShine\Contracts\UI\ComponentContract;
 use MoonShine\Contracts\UI\FieldContract;
 use MoonShine\Laravel\Fields\Slug;
-use MoonShine\Laravel\Pages\Page;
 use MoonShine\Laravel\TypeCasts\ModelCaster;
 use MoonShine\UI\Components\ActionButton;
 use MoonShine\UI\Components\ActionGroup;
-use MoonShine\UI\Components\FlexibleRender;
 use MoonShine\UI\Components\FormBuilder;
 use MoonShine\UI\Components\Heading;
 use MoonShine\UI\Components\Layout\Box;
@@ -24,19 +22,15 @@ use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Select;
 use MoonShine\UI\Fields\Switcher;
 use MoonShine\UI\Fields\Text;
+use MoonShine\UI\Fields\Textarea;
 use Reker7\MoonShineBlocks\BuildBlockItemFields;
+use Reker7\MoonShineBlocks\Pages\AbstractBlockFormPage;
 use Reker7\MoonShineBlocksCore\Models\Block;
 use Reker7\MoonShineBlocksCore\Models\BlockItem;
 
-final class FormBlockItemPage extends Page
+final class FormBlockItemPage extends AbstractBlockFormPage
 {
-    protected ?Block $block = null;
-
     protected ?BlockItem $item = null;
-
-    // ==========================================
-    // Public API Methods
-    // ==========================================
 
     public function getTitle(): string
     {
@@ -67,10 +61,6 @@ final class FormBlockItemPage extends Page
         ];
     }
 
-    // ==========================================
-    // Lifecycle Methods
-    // ==========================================
-
     protected function prepareBeforeRender(): void
     {
         parent::prepareBeforeRender();
@@ -79,32 +69,12 @@ final class FormBlockItemPage extends Page
             return;
         }
 
-        if (! $this->getBlock()) {
-            throw new ModelNotFoundException('Block not found');
-        }
+        $this->ensureBlockExists();
 
         if (request()->route('item') && ! $this->getItem()) {
             throw new ModelNotFoundException('Block item not found');
         }
     }
-
-    /**
-     * @return list<ComponentContract>
-     */
-    protected function components(): iterable
-    {
-        if (! $this->getBlock()) {
-            return [
-                FlexibleRender::make(__('moonshine-blocks::ui.block_not_found')),
-            ];
-        }
-
-        return $this->getLayers();
-    }
-
-    // ==========================================
-    // Layer Methods
-    // ==========================================
 
     /**
      * @return list<ComponentContract>
@@ -119,7 +89,6 @@ final class FormBlockItemPage extends Page
 
         return [
             Flex::make([
-                Heading::make($this->getTitle(), 3),
                 ActionGroup::make($this->topButtons($block)),
             ])->justifyAlign('between')->itemsAlign('center'),
             LineBreak::make(),
@@ -144,10 +113,6 @@ final class FormBlockItemPage extends Page
         ];
     }
 
-    // ==========================================
-    // Button Methods
-    // ==========================================
-
     /**
      * @return list<ActionButtonContract>
      */
@@ -160,10 +125,6 @@ final class FormBlockItemPage extends Page
             )->secondary()->icon('arrow-left'),
         ];
     }
-
-    // ==========================================
-    // Component Builders
-    // ==========================================
 
     public function getForm(): ?FormBuilder
     {
@@ -194,18 +155,22 @@ final class FormBlockItemPage extends Page
         return $form;
     }
 
-    // ==========================================
-    // Field Definitions
-    // ==========================================
-
     /**
      * @return list<FieldContract>
      */
     protected function formFields(Block $block, string $method): array
     {
-        return [
+        $fields = [
             ...$this->baseFields($block),
             ...$this->dynamicFields($block),
+        ];
+
+        if ($this->isContentEnabled()) {
+            $fields[] = $this->resolveContentField();
+        }
+
+        return [
+            ...$fields,
             ...$this->systemFields($method),
         ];
     }
@@ -232,7 +197,7 @@ final class FormBlockItemPage extends Page
                 ->default(true),
 
             Number::make(__('moonshine-blocks::ui.sorting'), 'sorting')
-                ->default(500),
+                ->default(config('moonshine-blocks.ui.sorting_default', 500)),
         ];
 
         if ($block->categories()->exists()) {
@@ -250,35 +215,8 @@ final class FormBlockItemPage extends Page
      */
     protected function dynamicFields(Block $block): array
     {
-        // Ensure fieldPresets are loaded for merged fields
-        $block->loadMissing('fieldPresets');
-
-        $groupedFields = $block->getGroupedFields();
-
-        if (empty($groupedFields)) {
-            return [];
-        }
-
-        return [(new BuildBlockItemFields())->buildForBlock($block)];
+        return (new BuildBlockItemFields())->buildForBlock($block);
     }
-
-    /**
-     * @return list<FieldContract>
-     */
-    protected function systemFields(string $method): array
-    {
-        if (strtoupper($method) !== 'PUT') {
-            return [];
-        }
-
-        return [
-            Hidden::make('_method')->setValue('PUT'),
-        ];
-    }
-
-    // ==========================================
-    // Helper Methods
-    // ==========================================
 
     /**
      * @return array{0: string, 1: string}
@@ -306,36 +244,6 @@ final class FormBlockItemPage extends Page
         return $this->getItem() !== null;
     }
 
-    protected function isReactiveRequest(): bool
-    {
-        return request()->boolean('_async')
-            || request()->has('_component_name')
-            || request()->has('_fragment');
-    }
-
-    // ==========================================
-    // Data Retrieval
-    // ==========================================
-
-    protected function getBlock(): ?Block
-    {
-        if ($this->block !== null) {
-            return $this->block;
-        }
-
-        $param = request()->route('block');
-
-        if ($param instanceof Block) {
-            return $this->block = $param;
-        }
-
-        $slug = (string) ($param ?? request('block', ''));
-
-        return $this->block = $slug !== ''
-            ? Block::query()->where('slug', $slug)->first()
-            : null;
-    }
-
     protected function getItem(): ?BlockItem
     {
         if ($this->item !== null) {
@@ -358,5 +266,41 @@ final class FormBlockItemPage extends Page
             ->where('block_id', $block->id)
             ->whereKey((int) $id)
             ->first();
+    }
+
+    protected function isContentEnabled(): bool
+    {
+        return (bool) config('moonshine-blocks.content.enabled', false);
+    }
+
+    protected function resolveContentField(): FieldContract
+    {
+        $field = config('moonshine-blocks.content.field');
+
+        if ($field === null) {
+            return Textarea::make(__('moonshine-blocks::ui.content'), 'content');
+        }
+
+        if (is_string($field) && class_exists($field)) {
+            $instance = app($field);
+
+            if (method_exists($instance, 'make')) {
+                return $instance->make();
+            }
+
+            if ($instance instanceof FieldContract) {
+                return $instance;
+            }
+        }
+
+        if (is_callable($field)) {
+            $result = $field();
+
+            if ($result instanceof FieldContract) {
+                return $result;
+            }
+        }
+
+        return Textarea::make(__('moonshine-blocks::ui.content'), 'content');
     }
 }

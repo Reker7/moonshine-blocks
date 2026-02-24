@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace VendorName\PackageName\Tests\Feature;
+namespace Reker7\MoonShineBlocks\Tests\Feature;
 
 use PHPUnit\Framework\Attributes\Test;
-use VendorName\PackageName\Tests\TestCase;
+use Reker7\MoonShineBlocks\Tests\TestCase;
 
 final class ExampleTest extends TestCase
 {
     #[Test]
-    public function it_example_test(): void
+    public function it_boots_without_errors(): void
     {
-        //
+        $this->assertTrue(true);
     }
 }

@@ -17,6 +17,8 @@ use MoonShine\UI\Components\Heading;
 use MoonShine\UI\Components\Layout\Box;
 use MoonShine\UI\Components\Layout\Flex;
 use MoonShine\UI\Components\Layout\LineBreak;
+use MoonShine\UI\Components\Tabs;
+use MoonShine\UI\Components\Tabs\Tab;
 use MoonShine\UI\Fields\Hidden;
 use MoonShine\UI\Fields\Number;
 use MoonShine\UI\Fields\Select;
@@ -160,17 +162,22 @@ final class FormBlockItemPage extends AbstractBlockFormPage
      */
     protected function formFields(Block $block, string $method): array
     {
-        $fields = [
-            ...$this->baseFields($block),
-            ...$this->dynamicFields($block),
+        $tabs = [
+            Tab::make(__('moonshine-blocks::ui.block.tab_main'), $this->baseFields($block)),
         ];
 
+        $dynamicFields = $this->dynamicFields($block);
+        if ($dynamicFields !== []) {
+            $tabs[] = Tab::make(__('moonshine-blocks::ui.block.tab_fields'), $dynamicFields);
+        }
+
         if ($this->isContentEnabled()) {
-            $fields[] = $this->resolveContentField();
+            $tabs[] = Tab::make(__('moonshine-blocks::ui.content'), [$this->resolveContentField()]);
         }
 
         return [
-            ...$fields,
+            Hidden::make('block_id')->setValue($block->id),
+            Tabs::make($tabs),
             ...$this->systemFields($method),
         ];
     }
@@ -181,8 +188,6 @@ final class FormBlockItemPage extends AbstractBlockFormPage
     protected function baseFields(Block $block): array
     {
         $fields = [
-            Hidden::make('block_id')->setValue($block->id),
-
             Text::make(__('moonshine-blocks::ui.title'), 'title')
                 ->reactive(lazy: true)
                 ->required(),

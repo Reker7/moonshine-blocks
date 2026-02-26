@@ -204,9 +204,9 @@ final class FormBlockItemPage extends AbstractBlockFormPage
                 ->default(config('moonshine-blocks.ui.sorting_default', 500)),
         ];
 
-        if ($block->categories()->exists()) {
+        if ($block->has_categories) {
             $fields[] = Select::make(__('moonshine-blocks::ui.category'), 'block_category_id')
-                ->options($block->categories()->pluck('name', 'id')->toArray())
+                ->options($block->categories()->orderBy('sorting')->pluck('name', 'id')->toArray())
                 ->nullable()
                 ->searchable();
         }

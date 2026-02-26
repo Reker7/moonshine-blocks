@@ -211,23 +211,29 @@ final class BlocksMenu
     }
 
     /**
-     * Элемент меню для multiple блока
-     * Если нет категорий — MenuItem на список элементов
-     * Если есть категории — MenuGroup с категориями и элементами
+     * Элемент меню для multiple блока.
+     * Если has_categories — MenuGroup с [Категории, Элементы].
+     * Иначе — MenuItem только на список элементов.
      */
     protected function makeMultipleBlockElement(Block $block): MenuElementContract
     {
+        $itemsLink = MenuItem::make(
+            route('moonshine.blocks.index', ['block' => $block->slug]),
+            __('moonshine-blocks::ui.items_list'),
+            $this->itemsIcon
+        );
+
+        if (! $block->has_categories) {
+            return MenuGroup::make($block->name, [$itemsLink], $this->multipleBlockIcon);
+        }
+
         return MenuGroup::make($block->name, [
             MenuItem::make(
                 route('moonshine.blocks.categories.index', ['block' => $block->slug]),
                 __('moonshine-blocks::ui.categories'),
                 $this->categoriesIcon
             ),
-            MenuItem::make(
-                route('moonshine.blocks.index', ['block' => $block->slug]),
-                __('moonshine-blocks::ui.items_list'),
-                $this->itemsIcon
-            ),
+            $itemsLink,
         ], $this->multipleBlockIcon);
     }
 

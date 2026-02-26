@@ -65,6 +65,10 @@ final class BlockFormPage extends FormPage
 				->hint(__('moonshine-blocks::ui.block.is_multiple_hint'))
 				->default(false),
 
+			Switcher::make(__('moonshine-blocks::ui.block.has_categories'), 'has_categories')
+				->hint(__('moonshine-blocks::ui.block.has_categories_hint'))
+				->default(false),
+
 			Switcher::make(__('moonshine-blocks::ui.block.is_active'), 'is_active')
 				->default(true),
 

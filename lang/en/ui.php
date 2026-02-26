@@ -89,6 +89,8 @@ return [
         'group' => 'Group',
         'is_multiple' => 'Multiple block',
         'is_multiple_hint' => 'This setting controls the ability to create items inside the block',
+        'has_categories' => 'Categories',
+        'has_categories_hint' => 'Enable categories for this block',
         'is_active' => 'Active',
         'sorting' => 'Sorting',
         'fields' => 'Block fields',

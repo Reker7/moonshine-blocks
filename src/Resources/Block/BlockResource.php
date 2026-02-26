@@ -25,10 +25,11 @@ final class BlockResource extends ModelResource
     protected function rules(mixed $item): array
     {
         return [
-            'name'      => ['required', 'string', 'max:255'],
-            'slug'      => ['required', 'string', 'max:255', 'unique:blocks,slug,' . ($item->id ?? 'null')],
-            'sorting'   => ['integer', 'min:0'],
-            'is_active' => ['boolean'],
+            'name'           => ['required', 'string', 'max:255'],
+            'slug'           => ['required', 'string', 'max:255', 'unique:blocks,slug,' . ($item->id ?? 'null')],
+            'sorting'        => ['integer', 'min:0'],
+            'is_active'      => ['boolean'],
+            'has_categories' => ['boolean'],
         ];
     }
 
